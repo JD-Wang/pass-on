@@ -1,0 +1,117 @@
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <script src="./lodash.js"></script>
+    <title>Full platform copy</title>
+    <!-- <script src="https://cdn.bootcdn.net/ajax/libs/vConsole/3.3.4/vconsole.min.js"></script>
+    <script>
+        var vConsole = new VConsole();
+        console.log('Hello world');
+    </script> -->
+</head>
+
+<body>
+    <div id="tip" class="tip"></div>
+    <div id="text" contenteditable="true"></div>
+    <script>
+        // document.getElementById('text').innerHTML = localStorage.saveText || ''
+    </script>
+    <script type="module">
+        import { toDataURL } from './util.js'
+
+        let lastTime = 0
+        let defaultTime = 0
+        const speed = 100
+        let times = ''
+
+        function runLoading() {
+            const startTime = performance.now()
+            clearTimeout(times)
+            times = setTimeout(() => {
+                lastTime -= (performance.now() - startTime) / 1000
+                if (lastTime <= 0) {
+                    document.getElementById('tip').style.width = '100%'
+                    document.getElementById('text').value = ''
+                    return false
+                }
+                document.getElementById('tip').style.width = `${parseInt(lastTime / defaultTime * 10000) / 100}%`
+                runLoading()
+            }, speed)
+        }
+        // 获取内容
+        function getInitData() {
+            return fetch('http://www.xlaoshi.com/api/getSaveText').then(function(response) {
+                return response.json();
+            }).then(res => {
+                if (res.success) {
+                    document.getElementById('text').innerHTML = res.data
+                    lastTime = res.lastTime
+                    defaultTime = res.totalTime
+                    runLoading()
+                }
+            })
+        }
+        // 保存数据
+        function setSaveText() {
+            return _.debounce(function (e) {
+                const val = document.getElementById('text').innerHTML
+                fetch('http://www.xlaoshi.com/api/saveText', {
+                    method: 'POST',
+                    body: JSON.stringify({text: val}),
+                }).then(res => res.json()).then(res => {
+                    if (res.success) {
+                        lastTime = defaultTime
+                        runLoading()
+                        localStorage.saveText = val
+                    }
+                })
+            }, 300)
+        }
+        const saveTextFunc = setSaveText()
+
+        getInitData().then(res => {
+            console.log('初始化完成')
+            // 监听值的变动
+            const target = document.querySelector('#text')
+
+            // 创建一个观察器实例并传入回调函数
+            const observer = new MutationObserver(function() {
+                console.log('有变动')
+                const imgs = document.querySelectorAll('img');
+                [].forEach.call(imgs, item => {
+                    if (item.src.indexOf('blob') === 0) {
+                        toDataURL(item.src, function(dataUrl) {
+                            item.src = dataUrl
+                        })
+                    }
+                })
+                console.log('可以保存了')
+                saveTextFunc()
+            })
+
+            // 以上述配置开始观察目标节点
+            observer.observe(target, { characterData: true, childList: true, subtree: true })
+        })
+    </script>
+
+    <style>
+        .tip {
+            height: 3px;
+            width: 100%;
+            float: right;
+            background: #65d221;
+        }
+        #text {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #ccc;
+            clear: both;
+        }
+        #text img {
+            width: 100%;
+        }
+    </style>
+</body>
+</html>
