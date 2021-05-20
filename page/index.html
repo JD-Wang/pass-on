@@ -42,7 +42,7 @@
         }
         // 获取内容
         function getInitData() {
-            return fetch('http://www.xlaoshi.com/api/getSaveText').then(function(response) {
+            return fetch('http://www.xlaoshi.com/api/3001/getSaveText').then(function(response) {
                 return response.json();
             }).then(res => {
                 if (res.success) {
@@ -57,7 +57,7 @@
         function setSaveText() {
             return _.debounce(function (e) {
                 const val = document.getElementById('text').innerHTML
-                fetch('http://www.xlaoshi.com/api/saveText', {
+                fetch('http://www.xlaoshi.com/api/3001/saveText', {
                     method: 'POST',
                     body: JSON.stringify({text: val}),
                 }).then(res => res.json()).then(res => {
