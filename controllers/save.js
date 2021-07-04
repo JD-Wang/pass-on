@@ -2,6 +2,8 @@
 
 const Router = require('koa-router')
 const router = Router()
+const fs = require('fs')
+const path = require('path')
 
 let text = ''
 const defaultTime = 180
@@ -21,23 +23,7 @@ function clearText() {
   }, 1000)
 }
 
-
-// 解析上下文里node原生请求的POST参数
-function parsePostData( ctx ) {
-    return new Promise((resolve, reject) => {
-      try {
-        let postdata = "";
-        ctx.req.addListener('data', (data) => {
-          postdata += data
-        })
-        ctx.req.addListener("end",function(){
-          resolve( JSON.parse(postdata) )
-        })
-      } catch ( err ) {
-        reject(err)
-      }
-    })
-}
+ 
 
 router.get('/getSaveText', async ( ctx )=>{
     ctx.body = {
@@ -49,7 +35,13 @@ router.get('/getSaveText', async ( ctx )=>{
 })
 
 router.post('/saveText', async ( ctx )=>{
-    let postData = await parsePostData( ctx )
+  let postData = {}
+    try {
+      postData = JSON.parse(ctx.request.body)
+    } catch (error) {
+      
+    }
+    
     // 保存数据    
     text = postData.text
 
@@ -60,6 +52,34 @@ router.post('/saveText', async ( ctx )=>{
       success: true,
       msg: 'ok'
   }
+})
+
+// 删除文件
+function clearFile (filePath) {
+  setTimeout(() => {
+    fs.unlink(filePath, err => {})
+  }, 6  * 1000)
+}
+
+// 保存文件
+router.post('/saveFile', async ( ctx )=>{
+  // 上传单个文件
+  const file = ctx.request.files.file; // 获取上传文件
+  // 创建可读流
+  const reader = fs.createReadStream(file.path);
+  const filePath = `files/${file.name}`
+  let fileBasePath = path.join(__dirname, `../page/${filePath}`)
+  // 创建可写流
+  const upStream = fs.createWriteStream(fileBasePath);
+  // 可读流通过管道写入可写流
+  reader.pipe(upStream);
+
+  clearFile(fileBasePath)
+
+  return ctx.body = {
+    name: file.name,
+    url: filePath
+  };
 })
 
 module.exports = router

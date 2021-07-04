@@ -1,5 +1,4 @@
 const Koa = require('koa')
-const fs = require('fs')
 // 导入koa2-cors模块
 // const cors = require('koa2-cors')
 const app = new Koa()
@@ -29,6 +28,10 @@ const { port } = require('./package.json')
 //       // exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'] //设置获取其他自定义字段
 //   })
 // )
+const koaBody = require('koa-body');
+app.use(koaBody({
+  multipart: true, // 支持文件上传
+}));
 
 const routers = require('./routers/index.js')
 

@@ -10,14 +10,6 @@
         var vConsole = new VConsole();
         console.log('Hello world');
     </script> -->
-</head>
-
-<body>
-    <div id="tip" class="tip"></div>
-    <div id="text" contenteditable="true"></div>
-    <script>
-        // document.getElementById('text').innerHTML = localStorage.saveText || ''
-    </script>
     <script type="module">
         import { toDataURL } from './util.js'
 
@@ -95,13 +87,73 @@
             observer.observe(target, { characterData: true, childList: true, subtree: true })
         })
     </script>
+    <script>
+        // 复制
+        function copyContent () {
+            var text = document.getElementById("text").innerHTML;
+            var input = document.getElementById("input");
+            input.textContent = text; // 修改文本框的内容
+            input.select(); // 选中文本
+            document.execCommand("copy"); // 执行浏览器复制命令
+            // var val = document.getElementById('text');
+            // window.getSelection().selectAllChildren(val);
+            // document.execCommand("Copy");
+            document.getElementById('copyTip').style.opacity = 1
+            setTimeout(() => {
+                document.getElementById('copyTip').style.opacity = 0
+            }, 1000)
+        }
+        // 文件提交
+        function submit (event) {
+            var formData = new FormData();
+            const file = document.getElementById("file").files[0]
+            formData.append('file', file);
+            
+            fetch("http://3001.xlaoshi.com/api/saveFile", {
+                method: "post",
+                body: formData
+            }).then(res => res.json()).then(({ name, url }) => {
+                document.getElementById('iframe').contentWindow.location.reload();
+            })
+        }
+ 
+    </script>
+</head>
+
+<body>
+    <div id="tip" class="tip"></div>
+
+    <div style="display: flex; height: 100%;">
+        <div style="flex: auto;">
+            <button class="btn" onclick="copyContent(this)">复制</button>
+            <span id="copyTip" style="opacity: 0; font-size: 12px; color: #666;">复制成功</span>
+            <div id="text" contenteditable="true"></div>
+            <textarea style="opacity: 0;" id="input" ></textarea>
+        </div>
+        <div style="width: 550px;">
+            <div>
+                <input class="file-btn" type="file" name="file" id="file" oninput="submit()">
+            </div>
+            <iframe id="iframe" style="width: 550px; height: 100%;" src="http://save.xlaoshi.com/files/" frameborder="0"></iframe>
+        </div>
+    </div>
 
     <style>
         .tip {
             height: 3px;
-            width: 100%;
-            float: right;
+            position: absolute;
+            top: 0;
+            right: 0;
             background: #65d221;
+        }
+        .btn {
+            cursor: pointer;
+            background: #5c96ef;
+            border: none;
+            color: #fff;
+            padding: 5px 20px;
+            border-radius: 5px;
+            margin: 10px 0;
         }
         #text {
             width: 100%;
@@ -110,7 +162,7 @@
             clear: both;
         }
         #text img {
-            width: 100%;
+            max-width: 500px;
         }
     </style>
 </body>
