@@ -36,21 +36,20 @@ router.get('/getSaveText', async ( ctx )=>{
 
 router.post('/saveText', async ( ctx )=>{
   let postData = {}
-    try {
-      postData = JSON.parse(ctx.request.body)
-    } catch (error) {
-      
-    }
-    
-    // 保存数据    
-    text = postData.text
+  try {
+    postData = JSON.parse(ctx.request.body)
+  } catch (error) {
+  }
+  
+  // 保存数据    
+  text = postData.text
 
-    lastTime = text === '' ? 0 : defaultTime
-    clearText()
+  lastTime = text === '' ? 0 : defaultTime
+  clearText()
 
-    ctx.body = {
-      success: true,
-      msg: 'ok'
+  ctx.body = {
+    success: true,
+    msg: 'ok'
   }
 })
 
@@ -58,7 +57,7 @@ router.post('/saveText', async ( ctx )=>{
 function clearFile (filePath) {
   setTimeout(() => {
     fs.unlink(filePath, err => {})
-  }, 6  * 1000)
+  }, 60  * 1000)
 }
 
 // 保存文件

@@ -31,6 +31,9 @@ const { port } = require('./package.json')
 const koaBody = require('koa-body');
 app.use(koaBody({
   multipart: true, // 支持文件上传
+  jsonLimit: "10mb",
+  formLimit: '10mb',
+  textLimit: '10mb'
 }));
 
 const routers = require('./routers/index.js')
