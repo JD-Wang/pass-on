@@ -31,6 +31,9 @@ const { port } = require('./package.json')
 const koaBody = require('koa-body');
 app.use(koaBody({
   multipart: true, // 支持文件上传
+  formidable: {
+    maxFieldsSize: 500*1024*1024    // 设置上传文件大小最大限制
+  },
   jsonLimit: "10mb",
   formLimit: '10mb',
   textLimit: '10mb'
